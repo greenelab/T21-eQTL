@@ -1,16 +1,9 @@
-# 15_chr21_distribution_panel.R
+# 05_chr21_distribution_panel.R
 #
 # Purpose: Reproduce the paper's Fig 2/3-style chromosome-21 vs genome
-#          distribution comparison for our cohort. This is the headline
-#          population-level evidence that should sit BEFORE any per-gene
-#          drill-down: it shows whether chromosome 21's ploidy-normalized
+#          distribution comparison for our cohort. This shows whether chromosome 21's ploidy-normalized
 #          fold-change distribution differs from baseMean-matched
-#          non-chr21 cohort variation. Scope what we can claim:
-#            - If chr21 distribution overlaps non-chr21, the paper's
-#              "no dosage compensation" finding holds at population level
-#              for our cohort.
-#            - It does NOT rule out per-gene compensation; the per-gene
-#              drill-down (script 04) is still needed.
+#          non-chr21 cohort variation. 
 #
 # Inputs:
 #   - results/tables/deseq2_all_genes_ploidy_normalized.csv
@@ -31,9 +24,6 @@ suppressPackageStartupMessages({
 
 set.seed(42)
 
-# Match the rest of the pipeline (scripts 09 and 12) - apples-to-apples
-# comparison requires both sides of the chr21-vs-genome distribution to
-# be on the same gene-type subset.
 RESTRICT_TO_PROTEIN_CODING <- TRUE
 
 cat("=== T21-eQTL: Chr21 vs Genome Distribution Panel ===\n\n")
@@ -104,9 +94,12 @@ stat_block <- function(x, label) {
   )
 }
 stats <- rbindlist(list(
-  stat_block(chr21$log2FoldChange,   "chr21 (n=322)"),
-  stat_block(matched$log2FoldChange, "non-chr21 (matched)"),
-  stat_block(other$log2FoldChange,   "non-chr21 (all)")
+  stat_block(chr21$log2FoldChange,
+             sprintf("chr21 (n=%d)", nrow(chr21))),
+  stat_block(matched$log2FoldChange,
+             sprintf("non-chr21 matched (n=%d)", nrow(matched))),
+  stat_block(other$log2FoldChange,
+             sprintf("non-chr21 all (n=%d)", nrow(other)))
 ))
 cat("\n=== Distribution stats ===\n")
 print(stats)
