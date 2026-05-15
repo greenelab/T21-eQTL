@@ -22,7 +22,7 @@ Of the 160 chr21 protein-coding genes tested:
 | DE_high, eQTL-supported | 6 |
 | DE_low, eQTL-supported | 9 |
 | DE_low, eQTL-tested but unsupported | 3 (BACE2, ADARB1, NRIP1) |
-| DE_low, no GTEx cis-eQTL coverage | 3 (CLIC6, JAM2, FTCD-class) |
+| DE_low, no GTEx cis-eQTL coverage | 3 (LTN1, RUNX1, ZBTB21) |
 | High repeats / Low expression / Not DE | 20 |
 
 All higher-than-expected genes (DE_high) are eQTL-supported - acting as a
