@@ -19,7 +19,7 @@ remaining as candidates for true regulatory dosage compensation?
 - 41 outside cohort noise:
   - 6 DE_high, all eQTL-supported (TSPEAR, MX1, RIPK4, COL6A2, CYYR1, YBEY).
   - 15 DE_low: 9 eQTL-supported, 3 eQTL-tested-not-supported (BACE2, ADARB1,
-    NRIP1), 3 with no GTEx eQTL coverage (CLIC6, JAM2, FTCD-class).
+    NRIP1), 3 with no GTEx eQTL coverage (LTN1, RUNX1, ZBTB21).
   - 20 in High repeats / Low expression / Not DE outside cohort noise.
 
 ---
