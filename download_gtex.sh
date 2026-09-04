@@ -1,75 +1,93 @@
 #!/usr/bin/env bash
-# Download GTEx v10 Whole Blood cis-eQTL allpairs and subset to chr21.
+# Download the GTEx v10 whole-blood cis-eQTL all-associations file for chr21.
 #
-# scripts/02_filter_genotypes.R reads the chr21-only parquet at:
-#   data/GTEx_Analysis_v10_QTLs_GTEx_Analysis_v10_eQTL_all_associations_Whole_Blood.v10.allpairs.chr21.parquet
+# Output: data/GTEx_Analysis_v10_QTLs_GTEx_Analysis_v10_eQTL_all_associations_Whole_Blood.v10.allpairs.chr21.parquet
+# Consumer: scripts/02_filter_genotypes.R reads it with arrow::read_parquet()
+#           and uses the columns gene_id, variant_id and pval_nominal.
 #
-# This script downloads the genome-wide Whole_Blood allpairs file from GTEx
-# v10 (multi-GB), filters to chr21 with python + pyarrow, and writes the
-# subset under the filename above. The full-genome download is removed
-# afterwards unless KEEP_FULL=1 is set.
+# GTEx distributes the v10 all-associations results per tissue and per
+# chromosome as parquet files in a requester-pays Google Cloud bucket
+# (https://gtexportal.org/home/downloads/adult-gtex/qtl):
+#   gs://gtex-resources/GTEx_Analysis_v10_QTLs/GTEx_Analysis_v10_eQTL_all_associations/
+# The file is used exactly as distributed; there is no conversion step, so no
+# python or pyarrow is needed. Egress is billed to the Google Cloud project
+# named in GCP_BILLING_PROJECT.
 #
-# Requirements:
-#   - curl
-#   - python3 with pyarrow (`pip install pyarrow`)
-
+# Usage (from the repo root, with gcloud or gsutil installed and authenticated):
+#   GCP_BILLING_PROJECT=<your-gcp-project> bash download_gtex.sh
 set -euo pipefail
 
-DATA_DIR="data"
-FULL_FILE="${DATA_DIR}/Whole_Blood.v10.allpairs.parquet"
-CHR21_FILE="${DATA_DIR}/GTEx_Analysis_v10_QTLs_GTEx_Analysis_v10_eQTL_all_associations_Whole_Blood.v10.allpairs.chr21.parquet"
-GTEX_URL="https://storage.googleapis.com/adult-gtex/bulk-qtl/v10/single-tissue-cis-qtl/GTEx_Analysis_v10_eQTL_all_associations/Whole_Blood.v10.allpairs.parquet"
+SRC_BUCKET="gs://gtex-resources"
+SRC_DIR="GTEx_Analysis_v10_QTLs/GTEx_Analysis_v10_eQTL_all_associations"
+SRC_FILE="Whole_Blood.v10.allpairs.chr21.parquet"
+SRC="${SRC_BUCKET}/${SRC_DIR}/${SRC_FILE}"
+DEST="data/GTEx_Analysis_v10_QTLs_GTEx_Analysis_v10_eQTL_all_associations_Whole_Blood.v10.allpairs.chr21.parquet"
+MIN_BYTES=10000000   # the chr21 file is ~50 MB; anything far smaller is not the data
 
-mkdir -p "${DATA_DIR}"
-
-if [ -f "${CHR21_FILE}" ]; then
-    echo "chr21 subset already present: ${CHR21_FILE}"
-    echo "Delete it first if you want to re-download / re-extract."
-    exit 0
+if [ -z "${GCP_BILLING_PROJECT:-}" ]; then
+  cat >&2 <<MSG
+GCP_BILLING_PROJECT is not set. The GTEx bucket is requester-pays, so a Google
+Cloud project must be named to bill the egress:
+  GCP_BILLING_PROJECT=<your-gcp-project> bash download_gtex.sh
+MSG
+  exit 1
 fi
 
-if ! command -v python3 >/dev/null 2>&1; then
-    echo "ERROR: python3 not found. Required to subset the parquet to chr21."
-    exit 1
-fi
+mkdir -p data
+tmp="${DEST}.part"
+rm -f "${tmp}"
 
-if ! python3 -c "import pyarrow" >/dev/null 2>&1; then
-    echo "ERROR: python3 pyarrow module not found."
-    echo "Install with: pip install pyarrow"
-    exit 1
-fi
-
-if [ ! -f "${FULL_FILE}" ]; then
-    echo "Downloading GTEx v10 Whole_Blood allpairs (multi-GB)..."
-    echo "  URL: ${GTEX_URL}"
-    curl -L --fail -o "${FULL_FILE}" "${GTEX_URL}"
+if command -v gcloud >/dev/null 2>&1; then
+  echo "Downloading ${SRC} with gcloud storage (billing project: ${GCP_BILLING_PROJECT})..."
+  gcloud storage cp --billing-project="${GCP_BILLING_PROJECT}" "${SRC}" "${tmp}"
+elif command -v gsutil >/dev/null 2>&1; then
+  echo "Downloading ${SRC} with gsutil (billing project: ${GCP_BILLING_PROJECT})..."
+  gsutil -u "${GCP_BILLING_PROJECT}" cp "${SRC}" "${tmp}"
 else
-    echo "Found existing ${FULL_FILE}; skipping download."
+  cat >&2 <<MSG
+Neither gcloud nor gsutil is on PATH. Install the Google Cloud SDK
+(https://cloud.google.com/sdk/docs/install), run 'gcloud auth login', and
+re-run this script. Alternatively download the object by hand
+  ${SRC}
+(requester-pays: https://cloud.google.com/storage/docs/using-requester-pays)
+and save it as
+  ${DEST}
+MSG
+  exit 1
 fi
 
-if [ ! -s "${FULL_FILE}" ]; then
-    echo "ERROR: ${FULL_FILE} is missing or empty after download."
-    exit 1
+size=$(stat -f%z "${tmp}" 2>/dev/null || stat -c%s "${tmp}")
+if [ "${size}" -lt "${MIN_BYTES}" ]; then
+  echo "Downloaded file is only ${size} bytes; expected tens of MB. Removing it." >&2
+  rm -f "${tmp}"
+  exit 1
+fi
+# Validate before promotion: the file must be a parquet carrying the columns
+# script 02 reads. R and arrow are pipeline dependencies, so their absence is
+# an error here too; in that case the download is kept as ${tmp} so it can be
+# validated and moved into place by hand. A file that fails the check is removed.
+if ! command -v Rscript >/dev/null 2>&1; then
+  echo "Rscript not found; cannot validate the download. Kept at ${tmp}, not promoted to ${DEST}." >&2
+  exit 1
+fi
+if ! Rscript --vanilla -e 'quit(status = as.integer(!requireNamespace("arrow", quietly = TRUE)))'; then
+  echo "R package arrow is not installed (run: Rscript install_packages.R). Download kept at ${tmp}, not promoted." >&2
+  exit 1
+fi
+if ! Rscript --vanilla -e '
+    suppressPackageStartupMessages(library(arrow))
+    f <- commandArgs(trailingOnly = TRUE)[1]
+    d <- read_parquet(f, as_data_frame = FALSE)
+    need <- c("gene_id", "variant_id", "pval_nominal")
+    miss <- setdiff(need, names(d))
+    if (length(miss) > 0) stop("parquet is missing column(s): ", paste(miss, collapse = ", "))
+    cat(sprintf("Parquet check OK: %d rows; columns: %s\n",
+                d$num_rows, paste(names(d), collapse = ", ")))
+  ' "${tmp}"; then
+  echo "Downloaded file failed the parquet check; removing ${tmp}." >&2
+  rm -f "${tmp}"
+  exit 1
 fi
 
-echo "Filtering to chr21 -> ${CHR21_FILE}"
-python3 - "${FULL_FILE}" "${CHR21_FILE}" <<'PY'
-import sys
-import pyarrow.parquet as pq
-import pyarrow.compute as pc
-
-src, dst = sys.argv[1], sys.argv[2]
-table = pq.read_table(src)
-# GTEx v10 variant_id format: "chr21_<pos>_<ref>_<alt>_b38"
-mask = pc.starts_with(table["variant_id"], "chr21_")
-table_chr21 = table.filter(mask)
-pq.write_table(table_chr21, dst)
-print(f"Wrote {table_chr21.num_rows:,} chr21 rows to {dst}")
-PY
-
-if [ "${KEEP_FULL:-0}" != "1" ]; then
-    echo "Removing full-genome file (set KEEP_FULL=1 to retain)."
-    rm -f "${FULL_FILE}"
-fi
-
-echo "Done. Pipeline-ready chr21 allpairs at: ${CHR21_FILE}"
+mv "${tmp}" "${DEST}"
+echo "Wrote ${DEST} (${size} bytes)"
