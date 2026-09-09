@@ -29,10 +29,6 @@ data/*
 data/processed/*
 data/raw/*
 
-# Keep small reference inputs (metadata, comorbidity)
-!data/P4C_metadata_021921_Costello.txt
-!data/P4C_Comorbidity_020921.tsv
-
 # Keep directory placeholders (also re-include the subdirs themselves)
 !data/processed/
 !data/processed/.gitkeep
@@ -46,6 +42,13 @@ data/raw/*
 *.log
 *.rds
 *.RDS
+
+# Working notes, not canonical docs
+CLAUDE.md
+docs/REPO_STATE.md
+docs/ABSTRACT_DEVIATIONS.md
+docs/METHODS_SPEC_threshold_and_eqtl_controls.md
+docs/superpowers/
 
 # OS / IDE
 .DS_Store
