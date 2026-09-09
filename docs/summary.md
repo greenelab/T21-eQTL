@@ -2,8 +2,18 @@ T21-eQTL results summary
 ================
 2026-09-02
 
-Computed from the pipeline outputs in `results/tables/` at commit
-`19310f8`. To refresh after a pipeline run:
+Rendered at commit `19310f8` (the commit checked out when this document
+was last knitted; `results/` is gitignored, so the outputs themselves are
+not versioned). This document reads:
+
+- `results/tables/chr21_lane_assignments.csv` (script 04) - every number
+  and gene list below.
+- `docs/figures/chr21_vs_genome_distribution.png` (script 06),
+  `docs/figures/Chr21_DEG.png` (script 07), and `docs/figures/Sankey.png`
+  (SankeyMATIC render of `results/tables/chr21_lane_sankeymatic_input.txt`,
+  script 05) - the figures embedded at the end.
+
+To refresh after a pipeline run:
 `Rscript -e 'rmarkdown::render("docs/summary.Rmd")'`. Methodology and
 its history: `README.md` and `docs/decisions.md`.
 
