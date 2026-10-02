@@ -176,7 +176,7 @@ vectorized per-variant regressions and the gene-level permutation test;
 negative (decoy variant set) and positive (GTEx eGene) controls;
 `eqtl_figures.R` - table preparation for script 11 (dosage-panel variants, per-gene rows, best-variant effect sizes, chr21 map bands);
 `allelic_fc.R` - allelic fold change fitted at ploidy 3, for script 14;
-`table1.R` - cohort-characteristics table helpers; `sankey_flow.R` - lane flow and its SankeyMATIC serialisation; `ploidy_distributions.R` - uncorrected vs ploidy-corrected log2FC tables for script 06; `biotypes.R` - the chr21 target biotype set (i.e., the classification of the gene as protein-coding, lncRNA, or pseudogene), `TARGET_BIOTYPES`; `covariates.R` - CyTOF table reader, composition fractions, design formula, the expression-artifact adjustment and the per-covariate attribution; `run.R` - run configuration and paths; `karyotype_subtype.R` - INCLUDE subtype join).
+`table1.R` - cohort-characteristics table helpers; `sankey_flow.R` - lane flow and its SankeyMATIC serialisation; `ploidy_distributions.R` - uncorrected vs ploidy-corrected log2FC tables for script 06; `biotypes.R` - the chr21 target biotype set (i.e., the classification of the gene as protein-coding, lncRNA, or pseudogene), `TARGET_BIOTYPES`; `covariates.R` - CyTOF table reader, composition fractions, design formula, the expression-artifact adjustment and the per-covariate attribution; `run.R` - run configuration and paths; `karyotype_subtype.R` - INCLUDE subtype join; `inflation.R` - block-wise regressions, lambda and QQ curves for a distal-variant inflation scan; `t21_dosage_stream.awk` - streams the T21 PASS file to an ALT-dosage matrix).
 
 | Script | Purpose | Output |
 |---|---|---|
