@@ -27,8 +27,8 @@ its history: `README.md` and `docs/decisions.md`.
 
 ## Overview
 
-Of the **318** chr21 genes classified (**160** protein-coding, **129**
-lncRNA, **29** pseudogene: the biotypes GTEx whole blood tests for
+Of the **318** chr21 transcripts classified (**160** protein-coding, **129**
+lncRNA, **29** pseudogene: the transcript biotypes GTEx whole blood tests for
 cis-eQTLs): **130** are Expected dosage, **12** are flagged as high
 repeats and **153** low-expression (baseMean below Hunter et al.’s
 coverage floor of 30), and **23** deviate (**10** DE_high, **13**
@@ -56,10 +56,10 @@ Two standalone gene sets go through the identical gene-level permutation
 test (same runner, 1000 permutations, BH within the set, q \< 0.05).
 
 **Negative control, unlinked variants.** Each deviating gene’s
-expression is tested against 5 cis variant sets of other tested genes
-(deviating genes and positive controls) whose TSS is at least 5 Mb away,
-so no decoy set can be in LD with the gene’s own locus. Sets with the
-closest variant count are taken first, and decoy variants below GTEx MAF
+expression is tested against 5 cis variant sets (i.e., sets of variants identiefied as significantly associated to other transcript regions in GTEx) of other tested genes
+(deviating genes and positive controls) whose transcription start site (TSS) is at least 5 Mb away,
+so no decoy set can be in linkage disequilibrium (LD) with the gene’s own locus. Sets with the
+closest variant count are taken first, and decoy variants below GTEx minor allele frequency (MAF)
 0.05 are dropped. Same genotypes, same subjects. Every decoy test is
 null, so BH should detect none (with no true effects it holds the chance
 of any detection to the FDR level), and about 5% of tests should reach

@@ -13,5 +13,5 @@ TARGET_BIOTYPES <- c("protein_coding", "lncRNA",
                      "transcribed_unprocessed_pseudogene",
                      "unprocessed_pseudogene", "pseudogene")
 
-# Short label for figure text.
+# Short label for figure text used in 06_chr21_distribution_panel.R and 07_three_panel_figure.R. 
 TARGET_BIOTYPES_LABEL <- "protein-coding, lncRNA, pseudogene"
