@@ -20,8 +20,8 @@
 # caps how many tasks run at once (bandwidth / rate-limit throttle).
 
 #SBATCH --job-name=vcf-drs
-#SBATCH --partition=amilan
-#SBATCH --qos=normal
+#SBATCH --partition=acpu
+#SBATCH --qos=cpu-normal
 ##SBATCH --account=<your-allocation>   # uncomment/set if you have no default
 #SBATCH --array=1-20%5
 #SBATCH --ntasks=1

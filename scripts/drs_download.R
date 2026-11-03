@@ -180,6 +180,14 @@ download_file <- function(url, dest, expected_size = NULL) {
   part <- paste0(dest, ".part")
   have <- if (file.exists(part)) file.info(part)$size else 0
 
+  # A .part longer than the object cannot be a prefix of it (e.g. several tasks
+  # appended to the same file); resuming would get a 416 and fail the size check
+  # on every retry, so start over.
+  if (!is.null(expected_size) && !is.na(expected_size) && have > expected_size) {
+    unlink(part)
+    have <- 0
+  }
+
   # Signed URLs already embed credentials; do not send Authorization.
   # connecttimeout caps the handshake; low_speed_* aborts a stalled transfer
   # without capping total time (large genomics files may take a while).
