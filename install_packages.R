@@ -44,6 +44,7 @@ cran_packages <- c(
   # Data manipulation
   "tidyverse",      # Collection: dplyr, ggplot2, tidyr, readr, etc.
   "data.table",     # Fast data processing for large files
+  "matrixStats",    # Row medians and maxima (scripts/lib/inflation.R)
 
   # Visualization
   "ggplot2",        # Plotting (included in tidyverse but listed explicitly)

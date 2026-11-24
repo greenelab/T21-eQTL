@@ -10,6 +10,7 @@ dependencies:
   # CRAN packages via conda
   - r-tidyverse
   - r-data.table
+  - r-matrixstats  # Row medians and maxima (scripts/lib/inflation.R)
   - r-ggplot2
   - r-ggrepel
   - r-patchwork   # Panel composition (script 06)
